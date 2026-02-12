@@ -8,6 +8,7 @@ import { EditTaskDialog } from "@/components/EditTaskDialog";
 import { SettingsMenu } from "@/components/SettingsMenu";
 import { TaskTabs, TabKey } from "@/components/TaskTabs";
 import { PetPlayground } from "@/components/PetPlayground";
+import { ConfettiRain } from "@/components/ConfettiRain";
 import { isOverdue } from "@/lib/mood";
 import { toast } from "sonner";
 import { playAdoptSound, playDeleteSound, playSaveSound, playCelebrateSound } from "@/lib/sounds";
@@ -28,6 +29,7 @@ const Index = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("active");
+  const [confettiKey, setConfettiKey] = useState(0);
 
   const activeTasks = useMemo(
     () => tasks.filter((t) => !t.completed && !isOverdue(t.deadline)),
@@ -80,11 +82,16 @@ const Index = () => {
 
   const handleComplete = useCallback(
     (id: string) => {
-      setTasks((prev) =>
-        prev.map((t) =>
+      setTasks((prev) => {
+        const next = prev.map((t) =>
           t.id === id ? { ...t, completed: true, completedAt: new Date().toISOString() } : t
-        )
-      );
+        );
+        const remaining = next.filter((t) => !t.completed && !isOverdue(t.deadline));
+        if (remaining.length === 0) {
+          setConfettiKey((k) => k + 1);
+        }
+        return next;
+      });
       playCelebrateSound();
       toast.success("Great job! Your pet is celebrating!");
     },
@@ -137,6 +144,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <ConfettiRain trigger={confettiKey} />
       <div className="container max-w-2xl mx-auto px-4 pb-12">
         <Header />
 
