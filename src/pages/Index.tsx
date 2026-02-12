@@ -6,6 +6,9 @@ import { PetCard } from "@/components/PetCard";
 import { AddTaskDialog } from "@/components/AddTaskDialog";
 import { EditTaskDialog } from "@/components/EditTaskDialog";
 import { SettingsMenu } from "@/components/SettingsMenu";
+import { TaskTabs, TabKey } from "@/components/TaskTabs";
+import { PetPlayground } from "@/components/PetPlayground";
+import { isOverdue } from "@/lib/mood";
 import { toast } from "sonner";
 import { playAdoptSound, playDeleteSound, playSaveSound, playCelebrateSound } from "@/lib/sounds";
 import {
@@ -24,9 +27,20 @@ const Index = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [tab, setTab] = useState<TabKey>("active");
 
-  const activeTasks = useMemo(() => tasks.filter((t) => !t.completed), [tasks]);
-  const completedTasks = useMemo(() => tasks.filter((t) => t.completed), [tasks]);
+  const activeTasks = useMemo(
+    () => tasks.filter((t) => !t.completed && !isOverdue(t.deadline)),
+    [tasks]
+  );
+  const overdueTasks = useMemo(
+    () => tasks.filter((t) => !t.completed && isOverdue(t.deadline)),
+    [tasks]
+  );
+  const completedTasks = useMemo(
+    () => tasks.filter((t) => t.completed),
+    [tasks]
+  );
 
   const handleAdd = useCallback(
     (taskData: Omit<Task, "id" | "createdAt">) => {
@@ -96,12 +110,37 @@ const Index = () => {
     [setTasks]
   );
 
+  const renderCards = (list: Task[]) => {
+    if (list.length === 0) {
+      return (
+        <div className="text-center py-16">
+          <p className="text-5xl mb-4">🐾</p>
+          <p className="text-muted-foreground">No pets here right now.</p>
+        </div>
+      );
+    }
+    return (
+      <div className="grid gap-4 sm:grid-cols-2">
+        {list.map((task) => (
+          <PetCard
+            key={task.id}
+            task={task}
+            onEdit={handleEdit}
+            onDelete={(id) => setDeleteId(id)}
+            onComplete={handleComplete}
+            onUndo={handleUndo}
+          />
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-2xl mx-auto px-4 pb-12">
         <Header />
 
-        <div className="flex items-center justify-between gap-4 mb-8">
+        <div className="flex items-center justify-between gap-4 mb-6">
           <AddTaskDialog onAdd={handleAdd} />
           <SettingsMenu tasks={tasks} onImport={handleImport} />
         </div>
@@ -115,39 +154,24 @@ const Index = () => {
           </div>
         ) : (
           <>
-            {activeTasks.length > 0 && (
-              <div className="grid gap-4 sm:grid-cols-2 mb-8">
-                {activeTasks.map((task) => (
-                  <PetCard
-                    key={task.id}
-                    task={task}
-                    onEdit={handleEdit}
-                    onDelete={(id) => setDeleteId(id)}
-                    onComplete={handleComplete}
-                    onUndo={handleUndo}
-                  />
-                ))}
-              </div>
-            )}
+            <TaskTabs
+              active={tab}
+              onChange={setTab}
+              counts={{
+                active: activeTasks.length,
+                overdue: overdueTasks.length,
+                completed: completedTasks.length,
+              }}
+            />
 
-            {completedTasks.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
-                  🎉 Completed ({completedTasks.length})
-                </h2>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {completedTasks.map((task) => (
-                    <PetCard
-                      key={task.id}
-                      task={task}
-                      onEdit={handleEdit}
-                      onDelete={(id) => setDeleteId(id)}
-                      onComplete={handleComplete}
-                      onUndo={handleUndo}
-                    />
-                  ))}
-                </div>
-              </div>
+            {tab === "active" && renderCards(activeTasks)}
+            {tab === "overdue" && renderCards(overdueTasks)}
+            {tab === "completed" && (
+              <PetPlayground
+                tasks={completedTasks}
+                onUndo={handleUndo}
+                onDelete={(id) => setDeleteId(id)}
+              />
             )}
           </>
         )}
