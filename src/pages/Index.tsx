@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Task } from "@/types/task";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Header } from "@/components/Header";
@@ -7,7 +7,7 @@ import { AddTaskDialog } from "@/components/AddTaskDialog";
 import { EditTaskDialog } from "@/components/EditTaskDialog";
 import { SettingsMenu } from "@/components/SettingsMenu";
 import { toast } from "sonner";
-import { playAdoptSound, playDeleteSound, playSaveSound } from "@/lib/sounds";
+import { playAdoptSound, playDeleteSound, playSaveSound, playCelebrateSound } from "@/lib/sounds";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +24,9 @@ const Index = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const activeTasks = useMemo(() => tasks.filter((t) => !t.completed), [tasks]);
+  const completedTasks = useMemo(() => tasks.filter((t) => t.completed), [tasks]);
 
   const handleAdd = useCallback(
     (taskData: Omit<Task, "id" | "createdAt">) => {
@@ -61,6 +64,31 @@ const Index = () => {
     toast.success("Pet released. Goodbye, little friend.");
   }, [deleteId, setTasks]);
 
+  const handleComplete = useCallback(
+    (id: string) => {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === id ? { ...t, completed: true, completedAt: new Date().toISOString() } : t
+        )
+      );
+      playCelebrateSound();
+      toast.success("Great job! Your pet is celebrating!");
+    },
+    [setTasks]
+  );
+
+  const handleUndo = useCallback(
+    (id: string) => {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === id ? { ...t, completed: false, completedAt: undefined } : t
+        )
+      );
+      toast.success("Task restored");
+    },
+    [setTasks]
+  );
+
   const handleImport = useCallback(
     (imported: Task[]) => {
       setTasks((prev) => [...prev, ...imported]);
@@ -86,16 +114,42 @@ const Index = () => {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {tasks.map((task) => (
-              <PetCard
-                key={task.id}
-                task={task}
-                onEdit={handleEdit}
-                onDelete={(id) => setDeleteId(id)}
-              />
-            ))}
-          </div>
+          <>
+            {activeTasks.length > 0 && (
+              <div className="grid gap-4 sm:grid-cols-2 mb-8">
+                {activeTasks.map((task) => (
+                  <PetCard
+                    key={task.id}
+                    task={task}
+                    onEdit={handleEdit}
+                    onDelete={(id) => setDeleteId(id)}
+                    onComplete={handleComplete}
+                    onUndo={handleUndo}
+                  />
+                ))}
+              </div>
+            )}
+
+            {completedTasks.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
+                  🎉 Completed ({completedTasks.length})
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {completedTasks.map((task) => (
+                    <PetCard
+                      key={task.id}
+                      task={task}
+                      onEdit={handleEdit}
+                      onDelete={(id) => setDeleteId(id)}
+                      onComplete={handleComplete}
+                      onUndo={handleUndo}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         <EditTaskDialog

@@ -1,6 +1,7 @@
 import { PetMood } from "@/types/task";
 
-export function getMood(deadline: string): PetMood {
+export function getMood(deadline: string, completed?: boolean): PetMood {
+  if (completed) return "celebrating";
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   const dl = new Date(deadline);
@@ -18,6 +19,7 @@ export function getMoodLabel(mood: PetMood): string {
     case "healthy": return "It's healthy and safe";
     case "worried": return "It needs help, more attention please";
     case "sleeping": return "Zzz";
+    case "celebrating": return "Mission complete! So happy!";
   }
 }
 
@@ -26,6 +28,7 @@ export function getMoodColor(mood: PetMood): string {
     case "healthy": return "bg-mint";
     case "worried": return "bg-pale-yellow";
     case "sleeping": return "bg-lavender";
+    case "celebrating": return "bg-peach";
   }
 }
 

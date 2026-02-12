@@ -4,7 +4,7 @@ export type AnimalType =
   | "cow" | "buffalo" | "horse" | "dragon" | "goat" | "sheep"
   | "monkey" | "beaver" | "bear";
 
-export type PetMood = "healthy" | "worried" | "sleeping";
+export type PetMood = "healthy" | "worried" | "sleeping" | "celebrating";
 
 export interface Task {
   id: string;
@@ -12,6 +12,8 @@ export interface Task {
   deadline: string; // ISO date string
   animal: AnimalType;
   createdAt: string;
+  completed?: boolean;
+  completedAt?: string;
 }
 
 export interface AnimalInfo {

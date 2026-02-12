@@ -46,6 +46,13 @@ export function playAdoptSound() {
   setTimeout(() => playTone(659, 0.15, "sine", 0.12), 100);
 }
 
+export function playCelebrateSound() {
+  // Three-note ascending celebration
+  playTone(523, 0.1, "sine", 0.1);
+  setTimeout(() => playTone(659, 0.1, "sine", 0.1), 80);
+  setTimeout(() => playTone(784, 0.15, "sine", 0.12), 160);
+}
+
 export function playDeleteSound() {
   // Soft descending tone
   playTone(440, 0.15, "sine", 0.1);
