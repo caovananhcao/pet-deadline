@@ -45,3 +45,11 @@ export function getDaysText(deadline: string): string {
   if (diffDays === 1) return "Due tomorrow";
   return `${diffDays} days left`;
 }
+
+export function isOverdue(deadline: string): boolean {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const dl = new Date(deadline);
+  dl.setHours(0, 0, 0, 0);
+  return dl.getTime() < now.getTime();
+}
