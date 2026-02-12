@@ -5,8 +5,9 @@ import { Header } from "@/components/Header";
 import { PetCard } from "@/components/PetCard";
 import { AddTaskDialog } from "@/components/AddTaskDialog";
 import { EditTaskDialog } from "@/components/EditTaskDialog";
-import { ImportExport } from "@/components/ImportExport";
+import { SettingsMenu } from "@/components/SettingsMenu";
 import { toast } from "sonner";
+import { playAdoptSound, playDeleteSound, playSaveSound } from "@/lib/sounds";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +33,7 @@ const Index = () => {
         createdAt: new Date().toISOString(),
       };
       setTasks((prev) => [...prev, newTask]);
+      playAdoptSound();
       toast.success("Your new pet has arrived!");
     },
     [setTasks]
@@ -45,6 +47,7 @@ const Index = () => {
   const handleSave = useCallback(
     (updated: Task) => {
       setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+      playSaveSound();
       toast.success("Changes saved");
     },
     [setTasks]
@@ -54,6 +57,7 @@ const Index = () => {
     if (!deleteId) return;
     setTasks((prev) => prev.filter((t) => t.id !== deleteId));
     setDeleteId(null);
+    playDeleteSound();
     toast.success("Pet released. Goodbye, little friend.");
   }, [deleteId, setTasks]);
 
@@ -69,9 +73,9 @@ const Index = () => {
       <div className="container max-w-2xl mx-auto px-4 pb-12">
         <Header />
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        <div className="flex items-center justify-between gap-4 mb-8">
           <AddTaskDialog onAdd={handleAdd} />
-          <ImportExport tasks={tasks} onImport={handleImport} />
+          <SettingsMenu tasks={tasks} onImport={handleImport} />
         </div>
 
         {tasks.length === 0 ? (
