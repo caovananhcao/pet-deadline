@@ -154,8 +154,18 @@ const Index = () => {
 
         <div className="flex items-center justify-between gap-4 mb-6">
           <AddTaskDialog onAdd={handleAdd} />
-          <SettingsMenu tasks={tasks} onImport={handleImport} />
+          <div className="flex items-center gap-2">
+            <NotificationBell
+              reminders={reminders}
+              unreadCount={unreadCount}
+              onDismiss={dismissReminder}
+              onOpen={markAllRead}
+            />
+            <SettingsMenu tasks={tasks} onImport={handleImport} />
+          </div>
         </div>
+
+        <ReminderBanner reminders={reminders} onDismiss={dismissReminder} />
 
         {tasks.length === 0 ? (
           <div className="text-center py-16">
