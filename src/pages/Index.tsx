@@ -33,6 +33,7 @@ const Index = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("active");
   const [confettiKey, setConfettiKey] = useState(0);
+  const { reminders, unreadCount, dismissReminder, markAllRead } = useTaskNotifications(tasks);
 
   const activeTasks = useMemo(
     () => tasks.filter((t) => !t.completed && !isOverdue(t.deadline)),
