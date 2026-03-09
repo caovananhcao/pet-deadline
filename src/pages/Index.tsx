@@ -9,9 +9,6 @@ import { SettingsMenu } from "@/components/SettingsMenu";
 import { TaskTabs, TabKey } from "@/components/TaskTabs";
 import { PetPlayground } from "@/components/PetPlayground";
 import { ConfettiRain } from "@/components/ConfettiRain";
-import { NotificationBell } from "@/components/NotificationBell";
-import { ReminderBanner } from "@/components/ReminderBanner";
-import { useTaskNotifications } from "@/hooks/useTaskNotifications";
 import { isOverdue } from "@/lib/mood";
 import { toast } from "sonner";
 import { playAdoptSound, playDeleteSound, playSaveSound, playCelebrateSound } from "@/lib/sounds";
@@ -33,7 +30,6 @@ const Index = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("active");
   const [confettiKey, setConfettiKey] = useState(0);
-  const { reminders, unreadCount, dismissReminder, markAllRead } = useTaskNotifications(tasks);
 
   const activeTasks = useMemo(
     () => tasks.filter((t) => !t.completed && !isOverdue(t.deadline)),
@@ -154,18 +150,8 @@ const Index = () => {
 
         <div className="flex items-center justify-between gap-4 mb-6">
           <AddTaskDialog onAdd={handleAdd} />
-          <div className="flex items-center gap-2">
-            <NotificationBell
-              reminders={reminders}
-              unreadCount={unreadCount}
-              onDismiss={dismissReminder}
-              onOpen={markAllRead}
-            />
-            <SettingsMenu tasks={tasks} onImport={handleImport} />
-          </div>
+          <SettingsMenu tasks={tasks} onImport={handleImport} />
         </div>
-
-        <ReminderBanner reminders={reminders} onDismiss={dismissReminder} />
 
         {tasks.length === 0 ? (
           <div className="text-center py-16">
